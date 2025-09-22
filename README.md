@@ -36,8 +36,9 @@ Manage repositories, branches, commits, and edit files with a simple UI — all 
 
 ## 🚀 Getting Started  
 
-### 1️⃣ Clone this repo  
+###  
 ```bash
+1️⃣ Clone this repo 
 git clone https://github.com/yourusername/streamgit-ide.git
 cd streamgit-ide
 
