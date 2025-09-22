@@ -29,7 +29,7 @@ Manage repositories, branches, commits, and edit files with a simple UI — all 
 
 ## 📸 Preview  
 
-![screenshot](docs/sc.jpg)  
+![screenshot](sc.jpg)  
 *(add a screenshot of your app here)*  
 
 ---
