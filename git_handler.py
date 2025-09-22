@@ -6,7 +6,7 @@ import stat
 import urllib.parse
 
 BASE_PATH="/tmp"
-
+USER_GIT_MAIL = "yourmail@gmail.com"
 
 class GitRepoManager:
     def __init__(self, repo_path, repo_url=None, branch="main", env=None, user_name="nobody", user_email="nobody@gmail.com"):
@@ -60,11 +60,9 @@ class GitRepoManager:
             self.repo.git.add(A=True)
             self.repo.index.commit(message)
 
-            # Set remote URL with PAT
             origin = self.repo.remote(name="origin")
             origin.set_url(self.remote_url)
 
-            # Push changes
             try:
                 if branch is not None:
                     origin.push(branch)
@@ -104,10 +102,8 @@ class LocalResourceManager:
             shutil.rmtree(path)
 
 
-# ---------------- Git Helpers for SSH / HTTPS ---------------- #
 
 def get_user_private_key(user_id, sshkey=None, ssh_key_id=None):
-    """Save SSH private key locally and return path"""
     if not sshkey:
         raise ValueError("SSH key not provided")  # in real case, fetch from DB/API
 
@@ -124,7 +120,6 @@ def get_user_private_key(user_id, sshkey=None, ssh_key_id=None):
 
 
 def generate_url_with_creds(repo_url, creds):
-    """Inject username/password into HTTPS repo URL"""
     if "http" not in repo_url:
         raise ValueError("URL must be HTTPS format")
     password = urllib.parse.quote(creds["password"])
@@ -152,7 +147,6 @@ def generate_git_env(git_details, user_id):
     return repo_url, git_env, user_name
 
 
-# ---------------- Main Git Handler ---------------- #
 
 class GitHandler:
     _instance = None
@@ -161,16 +155,14 @@ class GitHandler:
         self.path_id = path_id
         self.user_id = user_id
         self.branch = branch
-        # Generate repo_url, env, user_name automatically
         self.repo_url, self.git_env, self.user_name = generate_git_env(git_details, user_id)
         self.repo_name = self.get_repo_name()
 
 
-        # Managers
         self.local_mgr = LocalResourceManager()
         self.repo_path = self.local_mgr.get_repo_path(self.repo_name)
         self.repo_mgr = GitRepoManager(
-            user_email="nareaero@gmail.com",
+            user_email=USER_GIT_MAIL,
             repo_path=self.repo_path,
             repo_url=self.repo_url,
             branch=self.branch,
@@ -178,7 +170,6 @@ class GitHandler:
             user_name=self.user_name
         )
 
-        # Clone or open repo
         self.repo_mgr.clone_or_open()
         GitHandler._instance = self
 
@@ -189,31 +180,20 @@ class GitHandler:
         return GitHandler(path_id, user_id, git_details, branch)
 
     def branch_exists(self, branch_name):
-        """
-        Check if a branch exists locally or remotely.
 
-        Args:
-            branch_name (str): Name of the branch to check.
-
-        Returns:
-            bool: True if branch exists, False otherwise.
-        """
         if self.repo_mgr.repo is None:
             raise ValueError("Repository not initialized")
 
-        # Get all local branches
         local_branches = [b.name for b in self.repo_mgr.repo.branches]
         if branch_name in local_branches:
             return True
 
-        # Get all remote branches
         remote_branches = [ref.name.split("/")[-1] for ref in self.repo_mgr.repo.remotes.origin.refs]
         if branch_name in remote_branches:
             return True
 
         return True
 
-    # Delegate methods
     def pull_latest(self):
         self.repo_mgr.pull()
 
@@ -233,13 +213,7 @@ class GitHandler:
         return self.repo_url.split("/")[-1].split(".git")[0]
 
     def add_files_and_push(self, file_paths, commit_message="Update files",push=False):
-        """
-        Add files to the repo, commit, and push.
 
-        Args:
-            file_paths (list[str] or str): Single file path or list of file paths to add.
-            commit_message (str): Commit message for the changes.
-        """
         if file_paths:
             if not isinstance(file_paths, list):
                 file_paths = [file_paths]
@@ -250,7 +224,6 @@ class GitHandler:
                     print(f"Warning: File '{f}' does not exist and will be skipped.")
                     continue
 
-                # Copy external file into repo root
                 if not f.startswith(self.repo_path):
                     dest_path = os.path.join(self.repo_path, os.path.basename(f))
                     shutil.copy2(f, dest_path)
@@ -258,34 +231,23 @@ class GitHandler:
                 else:
                     abs_paths.append(f)
 
-            # Add files to git
             for path in abs_paths:
                 self.repo_mgr.repo.git.add(path)
         else:
-            # No files specified: add all changes
             self.repo_mgr.repo.git.add(A=True)
 
-        # Commit & push
         if push:
             self.commit_and_push(commit_message)
 
     def create_new_branch(self, branch_name, switch_to=True):
-        """
-        Create a new branch and optionally switch to it.
 
-        Args:
-            branch_name (str): Name of the new branch.
-            switch_to (bool): Whether to checkout the new branch after creating it.
-        """
         if self.repo_mgr.repo is None:
             raise ValueError("Repository not initialized")
 
         try:
-            # Create branch
             self.repo_mgr.repo.git.branch(branch_name)
             print(f"Branch '{branch_name}' created successfully.")
 
-            # Optionally switch
             if switch_to:
                 self.repo_mgr.repo.git.checkout(branch_name)
                 print(f"Switched to branch '{branch_name}'.")
@@ -293,13 +255,7 @@ class GitHandler:
             print(f"Error creating branch '{branch_name}': {e}")
 
     def checkout_branch(self, branch_name):
-        """
-        Create a new branch and optionally switch to it.
 
-        Args:
-            branch_name (str): Name of the new branch.
-            switch_to (bool): Whether to checkout the new branch after creating it.
-        """
         if self.repo_mgr.repo is None:
             raise ValueError("Repository not initialized")
 

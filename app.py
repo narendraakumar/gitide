@@ -100,7 +100,8 @@ if col1.button("Pull Latest"):
     handler.pull_latest()
     st.success("Pulled latest changes")
 
-# -------- Create Branch --------
+
+
 # -------- Create Branch --------
 new_branch_input = col2.text_input("New branch name", "")
 
@@ -116,7 +117,7 @@ if col2.button("Create Branch"):
             current_branch = handler.repo_mgr.repo.active_branch.name
             st.session_state["current_branch"] = current_branch
             branch_display.info(current_branch)
-            st.success(f"✅ Branch '{new_branch_input}' created!")
+            st.success(f"Branch '{new_branch_input}' created!")
     else:
         st.error("Please enter a branch name!")
 
@@ -125,6 +126,7 @@ repo = handler.repo_mgr.repo
 branch_names = [b.name for b in repo.branches]
 
 # Replace previous text_input with selectbox for inline suggestions
+
 checkout_branch_input = col3.selectbox(
     "Branch to checkout",
     options=branch_names,
@@ -146,10 +148,8 @@ if col3.button("Checkout Branch"):
 
 
 
-
-
-
 # -------- Create New File --------
+
 with st.expander("➕ Create New File"):
     file_relative_path = st.text_input(
         "File Path (relative to repo)", "new_file.py",
@@ -218,10 +218,8 @@ else:
         file_path = Path(repo_path) / selected_relative_file
         code = file_path.read_text(encoding="utf-8")
 
-        # Create a unique key for st_ace based on file
         editor_key = f"editor_{selected_relative_file}"
 
-        # Initialize session state once
         if editor_key not in st.session_state or st.session_state.get("last_selected_file") != selected_relative_file:
             st.session_state[editor_key] = code
             st.session_state["last_selected_file"] = selected_relative_file
@@ -270,7 +268,6 @@ else:
 
         commit_msg = st.text_input("Commit Message", "Update via app editor", key=f"commit_{selected_relative_file}")
 
-        # Save & Commit uses the new_code returned by st_ace
         if st.button("Save & Commit"):
             file_path.write_text(new_code, encoding="utf-8")
             st.success(f"Saved {selected_relative_file}")
