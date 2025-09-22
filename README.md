@@ -1,4 +1,3 @@
-Got it 👍 — here’s the README.md written fully in Markdown format with badges, ready to use:
 
 # ⚡ StreamGit IDE  
 
