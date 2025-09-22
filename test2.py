@@ -23,6 +23,6 @@ class GitHandler:
                 print("Push failed:", e.stderr)
 
 # Usage
-PAT = "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"
+PAT = "token"
 handler = GitHandler(repo_path='/tmp/git_repos/recipe', branch="feature/dag", pat=PAT)
 handler.commit_and_push("My commit message")
